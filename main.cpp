@@ -1,69 +1,69 @@
+#include <algorithm>
 #include <iostream>
 #include <list>
+#include <vector>
 #include <chrono>
 
+// please use at least 'g++ -std=c++14` flag to run this app
+// or else lambda auto won't work
+
 template<typename Iter>
-using value_type_t = typename std::iterator_traits<Iter>::value_type;
+void print(const Iter& begin, const Iter& end, bool new_line = true)
+{
+    std::for_each(begin, end, [](auto& i) { std::cout << i << " "; });
+    if (new_line) {
+        std::cout << std::endl;
+    }
+}
 
-template <typename Iterator, typename Comparator = std::less<value_type_t<Iterator>>>
-void merge(const Iterator& first, const Iterator& middle, const Iterator& last, Comparator lessThan = Comparator{}) {
-    // sizes
-    auto s1 = std::distance(first, middle);
-    auto s2 = std::distance(middle, last);
+template <typename Iter, typename Comparator>
+void merge(Iter begin, Iter middle, Iter end, Comparator compare) {
+    // temporary vector to store the merged elements
+    std::vector<typename Iter::value_type> tmp;
+    // the vector is reserved to avoid reallocations
+    // its size is set to the distance between `begin` and `end`
+    tmp.reserve(std::distance(begin, end));
 
-    // create temporary vectors to hold the two sub-arrays
-    std::vector<value_type_t<Iterator>> left(s1);
-    std::vector<value_type_t<Iterator>> right(s2);
+    // this line prints the elements in the left and right halves of the current merge operation
+    std::cout << "merge "; print(begin, middle, false); std::cout << "↔ "; print(middle, end);
 
-    std::move(first, middle, left.begin());
-    std::move(middle, last, right.begin());
+    Iter left = begin;
+    Iter right = middle;
 
-    auto it1 = left.begin();
-    auto it2 = right.begin();
-    auto current = first;
-
-    while (it1 != left.end() && it2 != right.end()) {
-        if (lessThan(*it1, *it2)) {
-            *current++ = std::move(*it1++);
+    // loop through until either the left or right range is exhausted
+    while (left != middle and right != end) {
+        if (compare(*right, *left)) {
+            tmp.emplace_back(*right++);
         } else {
-            *current++ = std::move(*it2++);
+            tmp.emplace_back(*left++);
         }
     }
 
-    std::move(it1, left.end(), current);
-    std::move(it2, right.end(), current);
+    tmp.insert(tmp.end(), left, middle);
+    tmp.insert(tmp.end(), right, end);
+
+    std::move(tmp.begin(), tmp.end(), begin);
+    std::cout << " ⇒    "; print(begin, end);
 }
 
-template<typename Iterator, typename Comparator = std::less<value_type_t<Iterator>>>
-void mergeSort(const Iterator& first, const Iterator& last, Comparator lessThan = Comparator{}) {
+template<typename Iter, typename Comparator>
+void mergeSort(Iter begin, Iter end, Comparator compare) {
+    std::cout << "sort  "; print(begin, end);
     // calculate total no. of elements between the two iterators
-    auto const N = std::distance(first, last);
-    if (N <= 1) return;
+    int size = std::distance(begin, end);
+    if (size <= 1) return;
     // calculate the iterator pointing to the middle of the current range    
-    auto middle = std::next(first, N/2);
+    auto middle = std::next(begin, size/2);
     // recursively sort the two halves
-    mergeSort(first, middle, lessThan);
-    mergeSort(middle, last, lessThan);
+    mergeSort(begin, middle, compare);
+    mergeSort(middle, end, compare);
     // merge the sorted halves
-    merge(first, middle, last, lessThan);
+    merge(begin, middle, end, compare);
 }
 
 int main() {
-    std::list<int> myList = {38, 27, 43, 3, 9, 82, 10};
-    
-    // std::cout << "Original List: ";
-    // for (const auto& element : myList) {
-    //     std::cout << element << " ";
-    // }
-    // std::cout << std::endl;
-
-    mergeSort(myList.begin(), myList.end());
-
-    // std::cout << "Sorted List: ";
-    // for (const auto& element : myList) {
-    //     std::cout << element << " ";
-    // }
-    // std::cout << std::endl;
-
+    std::list<int> l = {2, 5, 1, 7, 9, 2, 4, 3, 8, 11};
+    mergeSort(l.begin(), l.end(), std::less<int>());
+    std::cout << "done  "; print(l.begin(), l.end());
     return 0;
 }
