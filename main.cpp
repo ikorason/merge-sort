@@ -34,8 +34,10 @@ void merge(Iter begin, Iter middle, Iter end, Comparator compare) {
     while (left != middle and right != end) {
         if (compare(*right, *left)) {
             tmp.push_back(std::move(*right++));
+            // tmp.emplace_back(*right++);
         } else {
             tmp.push_back(std::move(*left++));
+            // tmp.emplace_back(*right++);
         }
     }
 
@@ -122,6 +124,9 @@ void testAllDuplicates() {
 }
 
 int main() {
+    // test result
+    std::cout << "Test Result: " << std::endl;
+
     std::cout << "Ascending Order:\n";
     testSortedResult(std::less<int>());
 
