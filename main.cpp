@@ -4,8 +4,9 @@
 #include <vector>
 #include <chrono>
 
-// please use at least 'g++ -std=c++14` flag to run this app
-// or else lambda auto won't work
+// timing test resuults summary
+// sorting duplicates elements is the fastest, after its random order, reverse sorted order
+// the slowest is the `sorted order`
 
 template<typename Iter>
 void print(const Iter& begin, const Iter& end, bool new_line = true)
@@ -141,5 +142,6 @@ int main() {
     testReverseSorted();
     testRandom();
     testAllDuplicates();
+
     return 0;
 }
